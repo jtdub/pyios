@@ -50,14 +50,10 @@ class IOS(object):
             pass
 
         """ Receive 'hello' from remote device """
-        index = host.expect(']]>]]>', timeout=self.timeout)
-        if index:
-            server_hello = host.before
-            server_hello = server_hello.lstrip()
-            xml_tree = ET.fromstring(server_hello)
-        else:
-            self.close()
-            raise InvalidInputError('Remote device didn\'t send \'hello\'')
+        host.expect(']]>]]>', timeout=self.timeout)
+        server_hello = host.before
+        server_hello = server_hello.lstrip()
+        xml_tree = ET.fromstring(server_hello)
 
         """ Find and remove 'session-id' from remote hello """
         for session in xml_tree.findall('session-id'):
