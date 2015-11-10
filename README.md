@@ -11,3 +11,5 @@ netconf ssh
 line vty 0 15
  transport input ssh
 ```
+
+This library is currently experemental and is not a functiional library. All that it currently does is receive a hello from the NETCONF enabled network device, then responds with a hello. There is still quite a bit of work that needs to happen to be able to send commands via NETCONF.
