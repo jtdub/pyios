@@ -61,8 +61,12 @@ class IOS(object):
         client_hello = '{0}]]>]]>'.format(hello)
         host.sendline(client_hello)
 
+        """ Make the host variable callable by other functions """
+        self.host = host
+
     def close(self):
-        pass
+        """ Close the connection to the remote device """
+        self.host.close()
 
     def get_config(self, format='json'):
         pass
