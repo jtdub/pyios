@@ -6,13 +6,12 @@ from exceptions import InvalidInputError
 
 def __execute_netconf__(device, rpc_command, timeout):
     rpc = '''<?xml version="1.0" encoding="UTF-8"?>
-              <rpc message-id="101" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
-               {0}
-              </rpc>]]>]]>\n'''.format(rpc_command)
-    print rpc
+    <rpc message-id="101" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+     {0}
+    </rpc>]]>]]>\n'''.format(rpc_command)
     device.sendline(rpc)
-    response = device.expect("<*]]>]]>", timeout=timeout)
-    print response
+
+    return device.expect(pexpect.EOF, timeout=timeout)
 
 
 class IOS(object):
