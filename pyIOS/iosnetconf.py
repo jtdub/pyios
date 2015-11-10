@@ -5,6 +5,8 @@ import xml.etree.ElementTree as ET
 import sys
 import pexpect
 
+from exceptions import InvalidInputError
+
 
 class IOS(object):
 
@@ -17,7 +19,7 @@ class IOS(object):
 
     def open(self):
         """
-        To establish a NETCONF session, we do so utilizing ssh via:
+        To establish a NETCONF session, we utilize ssh via:
 
         ssh -s -p {{ port }} {{ username }}@{{ hostname }} netconf
 
@@ -30,6 +32,8 @@ class IOS(object):
         handshake is complete, the NETCONF session is established and ready
         to do work.
         """
+
+        """ Establishing a connection and logging in """
         host = pexpect.spawn('ssh -o ConnectTimeout={} -s -p {} {}@{} netconf'
                              .format(self.timeout, self.port, self.username,
                                      self.hostname))
@@ -43,21 +47,25 @@ class IOS(object):
             host.sendline(self.password)
         elif index == 2:
             pass
-        host.expect([']]>]]>', pexpect.EOF], timeout=self.timeout)
-        server_hello = host.before
-        server_hello = server_hello.lstrip()
-        with open(expanduser('~/.server_hello.netconf'), 'w') as f:
-            f.write(server_hello)
-        xml_tree = ET.parse(expanduser('~/.server_hello.netconf'))
-        xml_root = xml_tree.getroot()
+
+        """ Receive 'hello' from remote device """
+        index = host.expect([']]>]]>', pexpect.EOF], timeout=self.timeout)
+        if index == 0:
+            server_hello = host.before
+            server_hello = server_hello.lstrip()
+            xml_tree = ET.fromstring(server_hello)
+            xml_root = xml_tree.getroot()
+        elif index == 1:
+            self.close()
+            raise InvalidInputError('Remote device didn\'t send \'hello\'')
+
+        """ Find and remove 'session-id' from remote hello """
         session = xml_tree.find('session-id')
-        xml_root.remove(session)
-        xml_tree.write(expanduser('~/.client_hello.netconf'))
-        with open(expanduser('~/.client_hello.netconf'), 'r') as f:
-            hello = f.read()
+        hello = xml_root.remove(session)
+
+        """ Send 'hello' back to remote device """
         client_hello = '<?xml version="1.0" encoding="UTF-8"?>{0}]]>]]>'\
             .format(hello)
-
         host.sendline(client_hello)
 
     def close(self):
