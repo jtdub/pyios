@@ -64,10 +64,12 @@ class IOS(object):
 
         """ Find and remove 'session-id' from remote hello """
         for session in xml_tree.findall('session-id'):
-            hello = xml_tree.remove(session)
+            xml_tree.remove(session)
 
         """ Send 'hello' back to remote device """
-        client_hello = '{0}]]>]]>'.format(hello)
+        hello = ET.tostring(xml_tree) 
+        client_hello = '<?xml version="1.0" encoding="UTF-8"?>{0}]]>]]>'\
+            .format(hello)
         host.sendline(client_hello)
 
         """ Make the host variable callable by other functions """
