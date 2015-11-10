@@ -11,7 +11,7 @@ def __execute_netconf__(device, rpc_command, timeout):
     </rpc>]]>]]>\n'''.format(rpc_command)
     device.sendline(rpc)
 
-    return device.expect(pexpect.EOF, timeout=timeout)
+    return device.expect(']]>]]>', timeout=timeout)
 
 
 class IOS(object):
