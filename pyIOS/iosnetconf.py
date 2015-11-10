@@ -49,8 +49,8 @@ class IOS(object):
             pass
 
         """ Receive 'hello' from remote device """
-        index = host.expect([']]>]]>', timeout=self.timeout)
-        if index == 0:
+        index = host.expect(']]>]]>', timeout=self.timeout)
+        if index:
             server_hello = host.before
             server_hello = server_hello.lstrip()
             xml_tree = ET.fromstring(server_hello)
