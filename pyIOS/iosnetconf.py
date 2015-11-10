@@ -63,8 +63,10 @@ class IOS(object):
         client_hello = '{0}]]>]]>'.format(hello)
         host.sendline(client_hello)
 
+        self.host = host
+
     def close(self):
-        pass
+        self.host.close()
 
     def get_config(self, format='json'):
         pass
