@@ -77,7 +77,8 @@ class IOS(object):
         self.host.close()
 
     def get_config(self, format='xml'):
-        return '<get></get>' 
+        return __execute_netconf__(self.host, '<get></get>',
+                                   timeout)
 
     def load_running_config(self):
         pass
