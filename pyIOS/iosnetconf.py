@@ -79,7 +79,7 @@ class IOS(object):
 
     def get_config(self, format='xml'):
         return __execute_netconf__(self.host, '<get></get>',
-                                   timeout)
+                                   timeout=self.timeout)
 
     def load_running_config(self):
         pass
