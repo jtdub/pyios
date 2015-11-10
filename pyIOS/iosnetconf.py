@@ -49,23 +49,21 @@ class IOS(object):
             pass
 
         """ Receive 'hello' from remote device """
-        index = host.expect([']]>]]>', pexpect.EOF], timeout=self.timeout)
+        index = host.expect([']]>]]>', timeout=self.timeout)
         if index == 0:
             server_hello = host.before
             server_hello = server_hello.lstrip()
             xml_tree = ET.fromstring(server_hello)
-            xml_root = xml_tree.getroot()
-        elif index == 1:
+        else:
             self.close()
             raise InvalidInputError('Remote device didn\'t send \'hello\'')
 
         """ Find and remove 'session-id' from remote hello """
-        session = xml_tree.find('session-id')
-        hello = xml_root.remove(session)
+        for session in xml_tree.findall('session-id'):
+            hello = xml_tree.remove(session)
 
         """ Send 'hello' back to remote device """
-        client_hello = '<?xml version="1.0" encoding="UTF-8"?>{0}]]>]]>'\
-            .format(hello)
+        client_hello = '{0}]]>]]>'.format(hello)
         host.sendline(client_hello)
 
     def close(self):
