@@ -16,6 +16,20 @@ class IOS(object):
         self.timeout  = timeout
 
     def open(self):
+        """
+        To establish a NETCONF session, we do so utilizing ssh via:
+
+        ssh -s -p {{ port }} {{ username }}@{{ hostname }} netconf
+
+        The -s flag allows us to invoke the netconf subsystem on the remote
+        system.
+
+        The remote network device will immediately send a 'hello' xml command.
+        We take the 'hello' xml command, remove the system-id element and
+        send the 'hello' back to the remote network device. Once this
+        handshake is complete, the NETCONF session is established and ready
+        to do work. 
+        """
         host = pexpect.spawn('ssh -o ConnectTimeout={} -s -p {} {}@{} netconf'
                               .format(self.timeout, self.port,
                                       self.username, self.hostname))
@@ -41,7 +55,28 @@ class IOS(object):
         xml_tree.write(expanduser('~/.client_hello.netconf'))
         with open(expanduser('~/.client_hello.netconf'), 'r') as f:
             hello = f.read()
-        send_hello = '<?xml version="1.0" encoding="UTF-8"?>{0}]]>]]>'\
+        client_hello = '<?xml version="1.0" encoding="UTF-8"?>{0}]]>]]>'\
                      .format(hello)
 
-        host.sendline(send_hello)
+        host.sendline(client_hello)
+
+    def close(self):
+        self.host.close()
+
+    def get_config(self, format='json'):
+        pass
+
+    def load_running_config(self):
+        pass
+
+    def load_candidate_config(self, filename=None, config=None):
+        pass
+
+    def compare_config(self):
+        pass
+
+    def replace_config(self, config=None, force=None):
+        pass
+
+    def rollback(self):
+        pass
