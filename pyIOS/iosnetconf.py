@@ -4,6 +4,7 @@ import pexpect
 
 from exceptions import InvalidInputError
 
+
 def __execute_netconf__(device, rpc_command, timeout):
     rpc = '''<?xml version="1.0" encoding="UTF-8"?>
     <rpc message-id="101" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
@@ -12,7 +13,7 @@ def __execute_netconf__(device, rpc_command, timeout):
     device.sendline(rpc)
     device.expect('</rpc-reply>', timeout=timeout)
 
-    return device.before 
+    return device.before
 
 
 class IOS(object):
@@ -67,7 +68,7 @@ class IOS(object):
             xml_tree.remove(session)
 
         """ Send 'hello' back to remote device """
-        hello = ET.tostring(xml_tree) 
+        hello = ET.tostring(xml_tree)
         client_hello = '<?xml version="1.0" encoding="UTF-8"?>{0}]]>]]>\n'\
             .format(hello)
         host.sendline(client_hello)
