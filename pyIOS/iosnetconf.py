@@ -1,9 +1,17 @@
 import xml.etree.ElementTree as ET
 
-import sys
 import pexpect
 
 from exceptions import InvalidInputError
+
+def __execute_netconf__(device, rpc_command, timeout):
+    rpc = '''<?xml version="1.0" encoding="UTF-8"?>
+              <rpc message-id="101" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+               {0}
+              </rpc>]]>]]>'''.format(rpc_command)
+    device.sendline(rpc)
+    response = device.expect("<*]]>]]>", timeout=timeout)
+    print response
 
 
 class IOS(object):
@@ -68,8 +76,8 @@ class IOS(object):
         """ Close the connection to the remote device """
         self.host.close()
 
-    def get_config(self, format='json'):
-        pass
+    def get_config(self, format='xml'):
+        return '<get></get>' 
 
     def load_running_config(self):
         pass
