@@ -9,6 +9,7 @@ def __execute_netconf__(device, rpc_command, timeout):
               <rpc message-id="101" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
                {0}
               </rpc>]]>]]>'''.format(rpc_command)
+    print rpc
     device.sendline(rpc)
     response = device.expect("<*]]>]]>", timeout=timeout)
     print response
