@@ -11,9 +11,10 @@ def __execute_netconf__(device, rpc_command, timeout):
      {0}
     </rpc>]]>]]>\n'''.format(rpc_command)
     device.sendline(rpc)
-    device.expect('</rpc-reply>', timeout=timeout)
+    device.expect("<rpc-reply.*</rpc-reply>]]>]]>", timeout=timeout)
+    output = device.after.rstrip('>').rstrip(']]').rstrip('>').rstrip(']]')
 
-    return device.before
+    return output
 
 
 class IOS(object):
@@ -72,6 +73,7 @@ class IOS(object):
         client_hello = '<?xml version="1.0" encoding="UTF-8"?>{0}]]>]]>\n'\
             .format(hello)
         host.sendline(client_hello)
+        host.expect(']]>]]>', timeout=self.timeout)
 
         """ Make the host variable callable by other functions """
         self.host = host
