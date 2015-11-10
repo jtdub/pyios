@@ -8,7 +8,7 @@ def __execute_netconf__(device, rpc_command, timeout):
     rpc = '''<?xml version="1.0" encoding="UTF-8"?>
               <rpc message-id="101" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
                {0}
-              </rpc>]]>]]>'''.format(rpc_command)
+              </rpc>]]>]]>\n'''.format(rpc_command)
     print rpc
     device.sendline(rpc)
     response = device.expect("<*]]>]]>", timeout=timeout)
@@ -68,7 +68,7 @@ class IOS(object):
 
         """ Send 'hello' back to remote device """
         hello = ET.tostring(xml_tree) 
-        client_hello = '<?xml version="1.0" encoding="UTF-8"?>{0}]]>]]>'\
+        client_hello = '<?xml version="1.0" encoding="UTF-8"?>{0}]]>]]>\n'\
             .format(hello)
         host.sendline(client_hello)
 
