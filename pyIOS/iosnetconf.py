@@ -10,7 +10,7 @@ def __execute_netconf__(device, rpc_command, timeout):
      {0}
     </rpc>]]>]]>\n'''.format(rpc_command)
     device.sendline(rpc)
-    device.expect(']]>]]>', timeout=timeout)
+    device.expect('</rpc-reply>', timeout=timeout)
 
     return device.before 
 
