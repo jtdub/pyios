@@ -1,5 +1,3 @@
-from os.path import expanduser
-
 import xml.etree.ElementTree as ET
 
 import sys
