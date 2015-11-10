@@ -37,6 +37,7 @@ class IOS(object):
         host = pexpect.spawn('ssh -o ConnectTimeout={} -s -p {} {}@{} netconf'
                              .format(self.timeout, self.port, self.username,
                                      self.hostname))
+        self.host = host
         index = host.expect(['\(yes\/no\)\?', '[Pp]assword:', pexpect.EOF],
                             timeout=self.timeout)
         if index == 0:
@@ -67,7 +68,7 @@ class IOS(object):
         host.sendline(client_hello)
 
     def close(self):
-        self.host.close()
+        pass
 
     def get_config(self, format='json'):
         pass
