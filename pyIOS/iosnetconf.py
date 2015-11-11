@@ -1,6 +1,8 @@
 import xml.etree.ElementTree as ET
 
 import pexpect
+import re
+import difflib
 
 from exceptions import InvalidInputError
 
@@ -12,9 +14,8 @@ def __execute_netconf__(device, rpc_command, timeout):
     </rpc>]]>]]>\n'''.format(rpc_command)
     device.sendline(rpc)
     device.expect("<rpc-reply.*</rpc-reply>]]>]]>", timeout=timeout)
-    output = device.after.rstrip('>').rstrip(']]').rstrip('>').rstrip(']]')
 
-    return output
+    return device.after
 
 
 class IOS(object):
@@ -82,26 +83,69 @@ class IOS(object):
         """ Close the connection to the remote device """
         self.host.close()
 
-    def get_config(self, format='xml'):
-        live = __execute_netconf__(self.host, '<get></get>',
-                                   timeout=self.timeout)
-        tree = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>{0}".format(live)
-        root = ET.fromstring(tree)
-        for data in root.findall('{urn:ietf:params:netconf:base:1.0}data'):
-            config = data.find(
-                '{urn:ietf:params:netconf:base:1.0}cli-config-data-block')
-            running = config.text
+    def get_config(self):
+        pass
 
-        return running
+    def load_config(self, filename=None, config=None):
+        """ Push a configuration to a device """
+        configuration = ''
+        encap_config = ''
+
+        if filename:
+            with open(filename, 'r') as f:
+                configuration = f.read()
+        else:
+            configuration = config
+
+        for line in configuration.split('\n'):
+            encap_config += '<cmd>{0}</cmd>'.format(line)
+
+        xml_encap = '''<edit-config>
+         <target>
+          <running/>
+         </target>
+          <config>
+           <cli-config-data>
+            {0}
+           </cli-config-data>
+          </config>
+         </edit-config>'''.format(encap_config)
+
+        live = __execute_netconf__(self.host, rpc_command=xml_encap,
+                                   timeout=self.timeout)
+        return live
 
     def load_running_config(self):
-        pass
+        """ Get the live running config from a remote device """
+        live = __execute_netconf__(self.host, '<get></get>',
+                                   timeout=self.timeout)
+        running = re.sub('<.+>', '', live)
+        running = re.sub('\r', '', running)
+
+        return running 
 
     def load_candidate_config(self, filename=None, config=None):
-        pass
+        """ Load a candidate config in to memory """
+        configuration = ''
 
-    def compare_config(self):
-        pass
+        if filename is None:
+            configuration = config
+        else:
+            with open(filename, 'r') as f:
+                configuration = f.read()
+
+        return configuration
+
+    def compare_config(self, running=None, candidate=None):
+        """ Compare a running configuration with a candidate configuration """
+        running_config = running
+        candidate_config = candidate
+        
+        diff = difflib.unified_diff(running_config.splitlines(1)[2:-2],
+                                    candidate_config.splitlines(1)[2:-2])
+        diff = ''.join([x.replace('\r', '') for x in diff])
+
+        return diff
 
     def replace_config(self, config=None, force=None):
         pass
