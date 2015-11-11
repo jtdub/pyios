@@ -83,8 +83,16 @@ class IOS(object):
         self.host.close()
 
     def get_config(self, format='xml'):
-        return __execute_netconf__(self.host, '<get></get>',
+        live = __execute_netconf__(self.host, '<get></get>',
                                    timeout=self.timeout)
+        tree = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>{0}".format(live)
+        root = ET.fromstring(tree)
+        for data in root.findall('{urn:ietf:params:netconf:base:1.0}data'):
+            config = data.find(
+                '{urn:ietf:params:netconf:base:1.0}cli-config-data-block')
+            running = config.text
+
+        return running
 
     def load_running_config(self):
         pass
