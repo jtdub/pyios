@@ -83,10 +83,59 @@ class IOS(object):
         """ Close the connection to the remote device """
         self.host.close()
 
-    def get_config(self):
-        pass
+    def get_running_config(self):
+        """ Get the live running config from a remote device """
+        live = __execute_netconf__(self.host, '<get></get>',
+                                   timeout=self.timeout)
+        running = re.sub('<.+>', '', live)
+        running = re.sub('\r', '', running)
 
-    def load_config(self, filename=None, config=None):
+        return running 
+
+    def load_running_config(self, config=None):
+        """ Get configuration section to be replaced """
+        xml_encap = '''<get-config>
+         <source>
+          <running/>
+         </source>
+         <filter>
+          <config-format-text-block>
+          <text-filter-spec> {0} </text-filter-spec>
+          </config-format-text-block>
+         </filter>
+        </get-config>'''.format(config)
+
+        live = __execute_netconf__(self.host, xml_encap,
+                                   timeout=self.timeout)
+        running = re.sub('<.+>', '', live)
+        running = re.sub('\r', '', running)
+
+        return running
+
+    def load_replace_config(self, filename=None, config=None):
+        """ Load a candidate config in to memory """
+        configuration = ''
+
+        if filename is None:
+            configuration = config
+        else:
+            with open(filename, 'r') as f:
+                configuration = f.read()
+
+        return configuration
+
+    def compare_config(self, running=None, candidate=None):
+        """ Compare a running configuration with a candidate configuration """
+        running_config = running
+        candidate_config = candidate
+        
+        diff = difflib.unified_diff(running_config.splitlines(1)[2:-2],
+                                    candidate_config.splitlines(1)[2:-2])
+        diff = ''.join([x.replace('\r', '') for x in diff])
+
+        return diff
+
+    def commit_config(self, filename=None, config=None):
         """ Push a configuration to a device """
         configuration = ''
         encap_config = ''
@@ -114,41 +163,3 @@ class IOS(object):
         live = __execute_netconf__(self.host, rpc_command=xml_encap,
                                    timeout=self.timeout)
         return live
-
-    def load_running_config(self):
-        """ Get the live running config from a remote device """
-        live = __execute_netconf__(self.host, '<get></get>',
-                                   timeout=self.timeout)
-        running = re.sub('<.+>', '', live)
-        running = re.sub('\r', '', running)
-
-        return running 
-
-    def load_candidate_config(self, filename=None, config=None):
-        """ Load a candidate config in to memory """
-        configuration = ''
-
-        if filename is None:
-            configuration = config
-        else:
-            with open(filename, 'r') as f:
-                configuration = f.read()
-
-        return configuration
-
-    def compare_config(self, running=None, candidate=None):
-        """ Compare a running configuration with a candidate configuration """
-        running_config = running
-        candidate_config = candidate
-        
-        diff = difflib.unified_diff(running_config.splitlines(1)[2:-2],
-                                    candidate_config.splitlines(1)[2:-2])
-        diff = ''.join([x.replace('\r', '') for x in diff])
-
-        return diff
-
-    def replace_config(self, config=None, force=None):
-        pass
-
-    def rollback(self):
-        pass
