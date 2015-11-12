@@ -83,36 +83,24 @@ class IOS(object):
         """ Close the connection to the remote device """
         self.host.close()
 
-    def get_running_config(self):
+    def load_running_config(self, filename=None):
         """ Get the live running config from a remote device """
-        live = __execute_netconf__(self.host, '<get></get>',
-                                   timeout=self.timeout)
-        running = re.sub('<.+>', '', live)
-        running = re.sub('\r', '', running)
+        configuration = ''
 
-        return running 
+        if filename is None:
+            live = __execute_netconf__(self.host, '<get></get>',
+                                       timeout=self.timeout)
+            configuration = re.sub('<.+>', '', live)
+            configuration = re.sub('\r', '', configuration)
+        else:
+            with open(filename, 'r') as f:
+                configuration = f.read()
 
-    def load_running_config(self, config=None):
-        """ Get configuration section to be replaced """
-        xml_encap = '''<get-config>
-         <source>
-          <running/>
-         </source>
-         <filter>
-          <config-format-text-block>
-          <text-filter-spec> {0} </text-filter-spec>
-          </config-format-text-block>
-         </filter>
-        </get-config>'''.format(config)
+        self.load_running_config = configuration
 
-        live = __execute_netconf__(self.host, xml_encap,
-                                   timeout=self.timeout)
-        running = re.sub('<.+>', '', live)
-        running = re.sub('\r', '', running)
+        return configuration 
 
-        return running
-
-    def load_replace_config(self, filename=None, config=None):
+    def load_candidate_config(self, filename=None, config=None):
         """ Load a candidate config in to memory """
         configuration = ''
 
@@ -122,12 +110,22 @@ class IOS(object):
             with open(filename, 'r') as f:
                 configuration = f.read()
 
+        self.load_candidate_config = configuration
+
         return configuration
 
     def compare_config(self, running=None, candidate=None):
         """ Compare a running configuration with a candidate configuration """
-        running_config = running
-        candidate_config = candidate
+
+        if running is None:
+            running_config = self.load_running_config
+        else:
+            running_config = running
+
+        if candidate is None:
+            candidate_config = self.load_candidate_config
+        else:
+            candidate_config = candidate
         
         diff = difflib.unified_diff(running_config.splitlines(1)[2:-2],
                                     candidate_config.splitlines(1)[2:-2])
