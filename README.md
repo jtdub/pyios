@@ -20,6 +20,7 @@ NOTE: This code isn't ready for production use.
 * The commit_config function doesn't like writing large chunks of configuration changes. Small, targeted configuration changes appear to work, however.
 * I need to test the lock and unlock functionality to lock a device from being configured by a third party at the same time that work is being performed via NETCONF.
 * I need to implement discard and rollback functions
+* I need to implement an API call in commit_config to write changes to startup.
 
 
 
